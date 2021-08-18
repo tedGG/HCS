@@ -18,13 +18,11 @@ public without sharing class ChangeRate {
     public PageReference changeRate(){
         PageReference page;
         
-            CustomUser__c user = new CustomUser__c();
-            user.id = idUrl;
-            user.rate__c = rateWrapper.rate;
+        CustomUser__c user = new CustomUser__c();
+        user.id = idUrl;
+        user.rate__c = rateWrapper.rate;
             
-            update user;
-           
-        
+        update user;
         return null;
     }
     

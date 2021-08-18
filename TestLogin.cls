@@ -1,15 +1,19 @@
 @IsTest
 public with sharing class TestLogin {
+
+    @testSetup static void setup() {
+        CustomUser__c user = new CustomUser__c();
+        user.Name = 'test';
+        user.Password__c = 'test';
+        user.IsManager__c = true;
+     
+        insert user;
+    }
+
     @IsTest
     public static void LoginTest(){
-       Test.StartTest(); 
-       CustomUser__c user = new CustomUser__c();
-       user.Name = 'test';
-       user.Password__c = 'test';
-       user.IsManager__c = true;
-       insert user;
-       
-        
+   
+        CustomUser__c user = [SELECT Name,Password__c,IsManager__c FROM CustomUser__c];
         ApexPages.StandardController sc = new ApexPages.StandardController(user);
 		LoginController login = new LoginController();
         
@@ -24,42 +28,7 @@ public with sharing class TestLogin {
         login.username = 'test';
         login.password = 'test';
 
-        Test.StopTest();
     }
-    @IsTest
-    public static void registrationTest(){
-     
-       CustomUser__c user = new CustomUser__c();
-       ApexPages.StandardController controller=new ApexPages.StandardController(user);
-       
-       
-       RegistrationController registration = new RegistrationController();
-      
-       registration.managerPage();
-       //registration.encode();
-
-       registration.user.Name = 'test';
-       registration.save();
-       
-       registration.user.Password__c = 'test';
-       registration.save();
-
-       registration.user.PasswordConfirm__c = 'test';
-       registration.save();
-
-       registration.user.Email__c = 'test';
-       registration.save();
-
-       registration.user.City__c = 'test';
-       registration.save();
-
-       registration.user.State__c = 'test';
-       registration.save();
     
-       registration.user.IsManager__c = true;
-       registration.save();
-
-    
-    }
     
 }

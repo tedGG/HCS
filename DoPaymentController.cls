@@ -1,12 +1,14 @@
 public class DoPaymentController {
+
+    public Decimal finalSum;
     public Id idUrl = ApexPages.currentPage().getParameters().get('id');
     public String selectedTypePayment {get;set;}
+
     List<selectOption> options = new List<selectoption>();
-    public Decimal finalSum;
-
     public List<MetersReadings__c> meterReadings {get;set;}
+  
 
-    public DoPaymentController() {
+    public DoPaymentController() { 
         meterReadings = [SELECT Id,Name,Previous__c,Current__c,Payment__c,State__c
                         FROM MetersReadings__c
                         WHERE Id =: idUrl];
@@ -18,7 +20,6 @@ public class DoPaymentController {
         paymentOptions.add(new SelectOption('Monthly','Mothly payment'));
         paymentOptions.add(new SelectOption('Partial','Partial payment'));
         
- 
         return paymentOptions;
 
     }
@@ -48,6 +49,5 @@ public class DoPaymentController {
         insert paymentHistory;
        return null;
     }
-    
 
 }

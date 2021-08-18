@@ -1,22 +1,18 @@
 public with sharing class RegistrationController {
 
-
-    public CustomUser__c user { get; private set; }
-    
+    String payload = '';
     String name {get;set;}
     String password {get;set;}
     public Id recordId{get;set;}
-
+    public CustomUser__c user { get; private set; }
     
-    public static String secretKey = '1234567890abcdef1234567890abcdef';
+    public static Blob privateKey = Crypto.generateAesKey(256); 
 
     public String ROLE = 'Default user';
     public Decimal RATEGAS;
     public Decimal RATEWATER;
     public Decimal RATEELECTRICITY;
 
-    //public static Blob cryptoKey = Blob.valueOf('380db410e8b11fa9');
-    String payload = '';
 
     public RegistrationController() {
         user = new CustomUser__c();
@@ -26,25 +22,18 @@ public with sharing class RegistrationController {
             [SELECT Name, Password__c, PasswordConfirm__c,Email__c,Phone_number__c,
             City__c,State__c,Role__c,Rate__c,IsManager__c,PaymentForElectricity__c,PaymentForWater__c,
             RateElectricity__c,RateWater__c,secretKey__c,vector__c FROM CustomUser__c WHERE Id = :id];  
-           
-            //decrypt();
     }
 
     public PageReference save() {
         recordId = Apexpages.CurrentPage().getParameters().get('id');
         payload = user.Name + user.Password__c;
 
-        
         user.Token__c = encrypt(payload);
-        system.debug(encrypt(payload));
-        
-        user.secretKey__c = secretKey;
-
+        user.secretKey__c =  EncodingUtil.base64Encode(privateKey);
         user.Role__c = ROLE;
         user.Rate__c = defineRateForGas(user.City__c);
         user.RateWater__c = defineRateForWater(user.City__c);
         user.RateElectricity__c = defineRateForElectricity(user.City__c);
-        
         insert user;
 
         PageReference page;
@@ -52,10 +41,12 @@ public with sharing class RegistrationController {
         if(user.IsManager__c){
             page = new PageReference('/ManagerPage');
             page.getParameters().put('id', user.id);
+            page.getParameters().put('token', user.Token__c);
             page.setRedirect(true);
         }else{
             page = new PageReference('/UserDetailsPage');
             page.getParameters().put('id', user.id);
+            page.getParameters().put('token', user.Token__c);
             page.setRedirect(true);
         } 
         return page;
@@ -131,10 +122,8 @@ public with sharing class RegistrationController {
 
     public static String encrypt(String valueToEncrypt){
         
-        Blob key = Blob.valueOf(secretKey); 
-        
         Blob source = Blob.valueOf(valueToEncrypt);
-        Blob encrypted = Crypto.encryptWithManagedIV('AES256', key, source);
+        Blob encrypted = Crypto.encryptWithManagedIV('AES256', privateKey, source);
         String encrypted64 = EncodingUtil.base64Encode(encrypted); 
         return encrypted64;
       }

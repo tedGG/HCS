@@ -9,7 +9,7 @@ public without sharing class UserDetailsController {
     public Integer currentKW {get;set;}
     public Integer previousKW {get;set;}
     public Decimal calculatedGas {get;set;}
-
+    
 
     public Integer currentWater {get;set;}
     public Integer previousWater {get;set;}
@@ -19,21 +19,26 @@ public without sharing class UserDetailsController {
     public Integer previousElectricity {get;set;}
     public Decimal calculatedElectricity {get;set;}
 
+    String UrlToken = ApexPages.currentPage().getParameters().get('token');
     Id idUrl = ApexPages.currentPage().getParameters().get('id');
 
     public UserDetailsController() {
+        
+        users = [SELECT Id,Name,City__c,rate__c,State__c,Email__c,debt__c,Payment__c,RateElectricity__c,
+        RateWater__c,secretKey__c,Token__c FROM CustomUser__c WHERE Token__c =: UrlToken];
 
-        if(idUrl == constId){
-            users = [SELECT Id,Name,City__c,rate__c,State__c,Email__c,debt__c,Payment__c,RateElectricity__c,
-            RateWater__c FROM CustomUser__c WHERE Id =: idUrl];
-        }else {
-            ApexPages.addmessage(new ApexPages.message(ApexPages.severity.WARNING,'You dont have access!'));
+        for(CustomUser__c us : users){
+            if(us.id != idUrl){
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.WARNING,'You do not have access'));
+            }
         }
+
         meterReadings = [SELECT Id,Name,State__c,Previous__c,Payment__c,Current__c,Custom_User__c
         FROM MetersReadings__c WHERE Custom_User__r.id =: idUrl];
         
     }
 
+    
     public PageReference putMeterReadings(){
 
         PageReference page;
@@ -44,15 +49,23 @@ public without sharing class UserDetailsController {
             for(CustomUser__c user : users){
                 calculatedGas = (currentKW - previousKW) * user.rate__c;  
                 calculatedWater = (currentWater - previousWater) * user.RateWater__c;
-                calculatedElectricity = (currentElectricity - previousElectricity) * user.RateElectricity__c;   
+                calculatedElectricity = (currentElectricity - previousElectricity) * user.RateElectricity__c; 
+                
+                page = new PageReference('/UserDetailsPage');
+                page.getParameters().put('id', user.id);
+                page.getParameters().put('token', user.Token__c);
+                page.setRedirect(true);
             }
 
             createMeterReadingsForGas(currentKW,previousKW,calculatedGas);
             createMeterReadginsForWater(currentWater,previousWater,calculatedWater);
             createMeterReadginsForElectricity(currentElectricity,previousElectricity,calculatedElectricity);
         } 
+        
+        
 
-        return null;
+
+        return page;
     }
 
     public void createMeterReadginsForWater(Decimal currentValue,Decimal previousValue, Decimal calculated){
@@ -107,14 +120,23 @@ public without sharing class UserDetailsController {
     }
 
     public PageReference paymentHistory(){
-        PageReference page = new PageReference('/PaymentHistory?id=' + idUrl);
-        page.setRedirect(true);
+        PageReference page = new PageReference('/PaymentHistory');
+
+        for(CustomUser__c user : users){
+            page.getParameters().put('id', user.id);
+            page.getParameters().put('token', user.Token__c);
+            page.setRedirect(true);
+        }
         return page;
     }
     public PageReference doPayment(){
         PageReference page = new PageReference('/PaymentPage');
-        page.getParameters().put('id', idUrl);
-        page.setRedirect(true);
+        
+        for(CustomUser__c user : users){
+            page.getParameters().put('id', user.id);
+            page.getParameters().put('token', UrlToken);
+            page.setRedirect(true);
+        }
         return page;
     }
     public PageReference LoginPage(){

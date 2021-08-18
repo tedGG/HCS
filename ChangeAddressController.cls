@@ -2,9 +2,7 @@ public without sharing class ChangeAddressController {
     public CustomUser__c user;
     public List<CustomUser__c> users {get;set;}
 
-
     Id idUrl = ApexPages.currentPage().getParameters().get('id');
-
     public AddressWrapper addressWrapper {get;set;}
 
     public ChangeAddressController(){
@@ -29,7 +27,6 @@ public without sharing class ChangeAddressController {
     public PageReference save(){
         PageReference page;
         
-       
         for(CustomUser__c u : users){
             if(u.debt__c){
                 ApexPages.addmessage(new ApexPages.message(ApexPages.severity.WARNING,'You have debt'));
@@ -41,7 +38,6 @@ public without sharing class ChangeAddressController {
             update user;
            }
         }
-        
         return null;
     }
     

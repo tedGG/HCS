@@ -4,7 +4,6 @@ public without sharing class ChangePayment {
     public List<CustomUser__c> users {get;set;}
 
     public Id idUrl = ApexPages.currentPage().getParameters().get('id');
-
     public ChangePaymentWrapper changePaymentWrapper {get;set;}
 
     public ChangePayment(){
@@ -20,12 +19,10 @@ public without sharing class ChangePayment {
          
         for(CustomUser__c us : users){
             CustomUser__c user = new CustomUser__c();
-            us.id = user.Id;
+            user.id = us.Id;
             user.Payment__c = changePaymentWrapper.payment;
             update user;
         }
-        
-        
         return null;
     }
     
